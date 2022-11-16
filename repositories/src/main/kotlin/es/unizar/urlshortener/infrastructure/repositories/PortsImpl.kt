@@ -23,5 +23,16 @@ class ShortUrlRepositoryServiceImpl(
     override fun findByKey(id: String): ShortUrl? = shortUrlEntityRepository.findByHash(id)?.toDomain()
 
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
+
+    override fun updateValidate(id: String, state: ValidateUrlState): Boolean = {
+        id.let{
+            val isUpdated = shortUrlEntityRepository.updateValidateByHash(id,state)
+            return isUpdated == 1
+        }
+    }
+
+    override fun deleteByKey(id: String){
+        shortUrlEntityRepository.deleteByHash(id)
+    }
 }
 

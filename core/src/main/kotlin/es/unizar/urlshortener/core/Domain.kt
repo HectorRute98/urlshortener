@@ -1,6 +1,7 @@
 package es.unizar.urlshortener.core
 
 import java.time.OffsetDateTime
+import es.unizar.urlshortener.core.usecases.ValidateUrlState
 
 /**
  * A [Click] captures a request of redirection of a [ShortUrl] identified by its [hash].
@@ -19,6 +20,7 @@ data class ShortUrl(
     val redirection: Redirection,
     val created: OffsetDateTime = OffsetDateTime.now(),
     val properties: ShortUrlProperties = ShortUrlProperties()
+    val validation: ValidateUrlState = ValidateUrlState.VALIDATION_NOT_DONE
 )
 
 /**

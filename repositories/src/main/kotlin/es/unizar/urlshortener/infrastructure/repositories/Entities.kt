@@ -2,6 +2,7 @@ package es.unizar.urlshortener.infrastructure.repositories
 
 import java.time.OffsetDateTime
 import javax.persistence.*
+import es.unizar.urlshortener.core.usecases.ValidateUrlState
 
 /**
  * The [ClickEntity] entity logs clicks.
@@ -32,6 +33,7 @@ class ShortUrlEntity(
     val target: String,
     val sponsor: String?,
     val created: OffsetDateTime,
+    val validation: ValidateUrlState,
     val owner: String?,
     val mode: Int,
     val safe: Boolean,

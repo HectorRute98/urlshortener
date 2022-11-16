@@ -1,6 +1,7 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
 import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.usecases.ValidateUrlState
 
 /**
  * Extension method to convert a [ClickEntity] into a domain [Click].
@@ -41,6 +42,7 @@ fun ShortUrlEntity.toDomain() = ShortUrl(
         mode = mode
     ),
     created = created,
+    validation = validation,
     properties = ShortUrlProperties(
         sponsor = sponsor,
         owner = owner,
@@ -58,6 +60,7 @@ fun ShortUrl.toEntity() = ShortUrlEntity(
     target = redirection.target,
     mode = redirection.mode,
     created = created,
+    validation = validation,
     owner = properties.owner,
     sponsor = properties.sponsor,
     safe = properties.safe,
