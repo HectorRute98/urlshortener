@@ -1,9 +1,8 @@
 package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.*
-import org.springframework.web.client.RestTemplate
-import kotlinx.coroutines.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Dada una URL comprueba se es alcanzable y segura mediante la
@@ -25,9 +24,10 @@ enum class ValidateUrlState {
 }
 
 interface ValidateUrlUseCase {
-    suspend fun ValidateURL(url: String): ValidateUrlResponse
-    suspend fun ReachableURL(url: String): ValidateUrlResponse
-    suspend fun SafeURL(url: String): ValidateUrlResponse
+    fun ValidateURL(url: String): ValidateUrlResponse
+    fun ReachableURL(url: String): ValidateUrlResponse
+    fun SafeURL(url: String): ValidateUrlResponse
+    fun CheckBlockListURL(url: String): ValidateUrlResponse
 }
 
 /**
@@ -39,28 +39,24 @@ class ValidateUrlUseCaseImpl(
     @Autowired
     lateinit var restTemplate: RestTemplate
 
-    @Value("\${google.API.clientName}")
     lateinit var googleClient: String
-    @Value("\${google.API.clientVersion}")
     lateinit var googleVersion: String
-    @Value("\${google.API.url}")
     lateinit var googleUrl: String
-    @Value("\${google.API.value}")
     lateinit var googleValue: String
 
     /*** Comprobacion en paralelo y con corutanas de que la URL es segura y alcanzable ***/
-    override suspend fun ValidateURL(url: String): ValidateUrlResponse = coroutineScope {
-        var response1 = async { ReachableURL(url) }
-        response1
-        // LO MISMO PERO CON GOOGLE SAFE BROSING
-        //if(response1.await() == ValidateUrlResponse.OK)
+    override fun ValidateURL(url: String): ValidateUrlResponse {
+        var response1 = ReachableURL(url)
+        //var response1 = SafeURL(url)
+        //var response1 = CheckBlockListURL(url)
+        return response1
     }
 
     /*** Validacion de que la URL es alcanzable ***/
-    override suspend fun ReachableURL(url: String): ValidateUrlResponse = {
+    override fun ReachableURL(url: String): ValidateUrlResponse {
         return try {
             var resp = restTemplate.getForEntity(url, String::class.java)
-            if(resp.getStatusCode().is2xxSuccessful()) {
+            if(resp.statusCode.is2xxSuccessful) {
                 ValidateUrlResponse.OK
             } else {
                 ValidateUrlResponse.NO_REACHABLE
@@ -71,9 +67,15 @@ class ValidateUrlUseCaseImpl(
     }
 
     /*** Validacion de que la URL es segura con Google Safe Browse ***/
-    override suspend fun SafeURL(url: String): ValidateUrlResponse = {
+    override fun SafeURL(url: String): ValidateUrlResponse {
         // TODO
-        ValidateUrlResponse.OK
+        return ValidateUrlResponse.OK
+    }
+
+    /*** Validacion de que la URL no se encuentra en la lista de SPAM ***/
+    override fun CheckBlockListURL(url: String): ValidateUrlResponse {
+        // TODO
+        return ValidateUrlResponse.OK
     }
 
 

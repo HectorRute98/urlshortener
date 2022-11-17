@@ -40,7 +40,18 @@ subprojects {
     }
 }
 
-project(":core") { }
+project(":core") {
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    dependencies {
+        "implementation"("org.springframework.boot:spring-boot-starter-web")
+        "implementation"("org.springframework.boot:spring-boot-starter-websocket")
+        "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+    }
+    tasks.getByName<BootJar>("bootJar") {
+        enabled = false
+    }
+}
 
 project(":repositories") {
     apply(plugin = "org.springframework.boot")
@@ -83,6 +94,7 @@ project(":app") {
         "implementation"(project(":core"))
         "implementation"(project(":delivery"))
         "implementation"(project(":repositories"))
+        "implementation"("org.springframework.boot:spring-boot-starter-web")
         "implementation"("org.springframework.boot:spring-boot-starter")
         "implementation"( "org.webjars:bootstrap:$bootstrapVersion")
         "implementation"("org.webjars:jquery:$jqueryVersion")

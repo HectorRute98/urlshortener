@@ -1,8 +1,9 @@
 package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
-import kotlinx.coroutines.*
 
 /**
  * Given an url returns the key that is used to create a short URL.
@@ -27,37 +28,34 @@ class CreateShortUrlUseCaseImpl(
     lateinit var validateUrlUseCase: ValidateUrlUseCase
 
     override fun create(url: String, data: ShortUrlProperties): ShortUrl =
-        if (validatorService.isValid(url)) {
-            runBlocking {
-
-                val validateResponse = async { validateUrlUseCase.ValidateURL(url) }
-
+            if (validatorService.isValid(url)) {
+                val validateResponse = validateUrlUseCase.ValidateURL(url)
                 val id: String = hashService.hasUrl(url)
-                val su = ShortUrl(
-                    hash = id,
-                    redirection = Redirection(target = url),
-                    properties = ShortUrlProperties(
-                        safe = data.safe,
-                        ip = data.ip,
-                        sponsor = data.sponsor
-                    ),
-                    validation = ValidateUrlState.VALIDATION_IN_PROGRESS
+                var su = ShortUrl(
+                        hash = id,
+                        redirection = Redirection(target = url),
+                        properties = ShortUrlProperties(
+                                safe = data.safe,
+                                ip = data.ip,
+                                sponsor = data.sponsor
+                        ),
+                        validation = ValidateUrlState.VALIDATION_IN_PROGRESS
                 )
                 shortUrlRepository.save(su)
-                var job = GlobalScope.launch {
-                    runBlocking {
-                        if (validateResponse.await() == ValidateUrlResponse.OK) {
-                            shortUrlRepository.updateValidate(su.hash, VALIDATION_ACEPT)
-                        }
-                        if (validateResponse.await() == ValidateUrlResponse.NO_REACHABLE){
-                            shortUrlRepository.deleteByKey(su.hash)
-                        }
+                /*** Comprobamos la validacion de la URL ***/
+                if (validateResponse == ValidateUrlResponse.OK) {
+                    if(shortUrlRepository.updateValidate(su.hash, ValidateUrlState.VALIDATION_ACEPT)){
+                        su = shortUrlRepository.findByKey(su.hash)!!
+                    } else {
+                        throw UpdateValidationNoWork(url)
                     }
                 }
-                job.cancel()
+                if (validateResponse == ValidateUrlResponse.NO_REACHABLE){
+                    shortUrlRepository.deleteByKey(su.hash)
+                }
+                println(su)
                 su
+            } else {
+                throw InvalidUrlException(url)
             }
-        } else {
-            throw InvalidUrlException(url)
-        }
 }

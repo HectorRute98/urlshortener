@@ -4,6 +4,7 @@ import es.unizar.urlshortener.core.Click
 import es.unizar.urlshortener.core.ClickRepositoryService
 import es.unizar.urlshortener.core.ShortUrl
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.usecases.ValidateUrlState
 
 /**
  * Implementation of the port [ClickRepositoryService].
@@ -24,7 +25,7 @@ class ShortUrlRepositoryServiceImpl(
 
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
 
-    override fun updateValidate(id: String, state: ValidateUrlState): Boolean = {
+    override fun updateValidate(id: String, state: ValidateUrlState): Boolean {
         id.let{
             val isUpdated = shortUrlEntityRepository.updateValidateByHash(id,state)
             return isUpdated == 1
