@@ -29,7 +29,7 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseBody
     @ExceptionHandler(value = [UpdateValidationNoWork::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    protected fun UpdateValidationNoWork(ex: UpdateValidationNoWork) = ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
+    protected fun updateValidationNoWork(ex: UpdateValidationNoWork) = ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
 }
 
 data class ErrorMessage(

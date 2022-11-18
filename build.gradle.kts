@@ -47,6 +47,7 @@ project(":core") {
         "implementation"("org.springframework.boot:spring-boot-starter-web")
         "implementation"("org.springframework.boot:spring-boot-starter-websocket")
         "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+        "implementation"("com.fasterxml.jackson.module:jackson-module-kotlin")
     }
     tasks.getByName<BootJar>("bootJar") {
         enabled = false
@@ -80,6 +81,10 @@ project(":delivery") {
 
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.mockito.kotlin:mockito-kotlin:$mockitoVersion")
+
+        "implementation"("org.springframework.boot:spring-boot-starter-actuator")
+        "implementation"("io.micrometer:micrometer-registry-prometheus:latest.release")
+
     }
     tasks.getByName<BootJar>("bootJar") {
         enabled = false
