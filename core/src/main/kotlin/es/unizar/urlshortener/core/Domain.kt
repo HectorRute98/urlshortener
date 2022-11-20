@@ -1,7 +1,25 @@
 package es.unizar.urlshortener.core
 
-import es.unizar.urlshortener.core.usecases.ValidateUrlState
 import java.time.OffsetDateTime
+
+/**
+ * Diferentes valores ara el campo de [Validacion].
+ */
+enum class ValidateUrlResponse {
+    OK,
+    NO_REACHABLE,
+    UNSAFE,
+    BLOCK
+}
+
+enum class ValidateUrlState {
+    VALIDATION_ACEPT,
+    VALIDATION_IN_PROGRESS,
+    VALIDATION_FAIL_NOT_REACHABLE,
+    VALIDATION_FAIL_NOT_SAFE,
+    VALIDATION_FAIL_BLOCK,
+    VALIDATION_NOT_DONE
+}
 
 /**
  * A [Click] captures a request of redirection of a [ShortUrl] identified by its [hash].

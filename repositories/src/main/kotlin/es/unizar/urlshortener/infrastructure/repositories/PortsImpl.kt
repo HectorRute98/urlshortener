@@ -4,7 +4,7 @@ import es.unizar.urlshortener.core.Click
 import es.unizar.urlshortener.core.ClickRepositoryService
 import es.unizar.urlshortener.core.ShortUrl
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
-import es.unizar.urlshortener.core.usecases.ValidateUrlState
+import es.unizar.urlshortener.core.*
 
 /**
  * Implementation of the port [ClickRepositoryService].
@@ -13,6 +13,10 @@ class ClickRepositoryServiceImpl(
     private val clickEntityRepository: ClickEntityRepository
 ) : ClickRepositoryService {
     override fun save(cl: Click): Click = clickEntityRepository.save(cl.toEntity()).toDomain()
+
+    override fun findByHash(id: String): List<Click> = clickEntityRepository.findAllByHash(id).forEach()
+
+    override fun existHash(id: String): Boolean = clickEntityRepository.existsByHash(id)
 }
 
 /**
@@ -32,7 +36,7 @@ class ShortUrlRepositoryServiceImpl(
         }
     }
 
-    override fun deleteByKey(id: String){
+    override fun deleteByKey(id: String) {
         shortUrlEntityRepository.deleteByHash(id)
     }
 }

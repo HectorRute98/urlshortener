@@ -1,12 +1,14 @@
 package es.unizar.urlshortener.core
 
-import es.unizar.urlshortener.core.usecases.ValidateUrlState
+import es.unizar.urlshortener.core.*
 
 /**
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
  */
 interface ClickRepositoryService {
     fun save(cl: Click): Click
+    fun existHash(id: String): Boolean
+    fun findByHash(id: String): List<Click>
 }
 
 /**

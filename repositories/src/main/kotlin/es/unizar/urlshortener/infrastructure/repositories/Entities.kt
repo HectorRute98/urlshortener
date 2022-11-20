@@ -1,6 +1,6 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
-import es.unizar.urlshortener.core.usecases.ValidateUrlState
+import es.unizar.urlshortener.core.*
 import java.time.OffsetDateTime
 import javax.persistence.*
 

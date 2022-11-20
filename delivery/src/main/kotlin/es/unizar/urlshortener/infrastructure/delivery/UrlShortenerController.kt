@@ -3,6 +3,7 @@ package es.unizar.urlshortener.infrastructure.delivery
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
+import es.unizar.urlshortener.core.usecases.InfoClientUserCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -40,6 +41,13 @@ interface UrlShortenerController {
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
 
+    /**
+     * Devuelve información relevante sobre la URI acortada identificada por el parámetro id..
+     *
+     * **Note**:
+     */
+    fun infoner(id: String, request: HttpServletRequest): ResponseEntity<Void>
+
 }
 
 /**
@@ -68,13 +76,19 @@ data class ShortUrlDataOut(
 class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
-    val createShortUrlUseCase: CreateShortUrlUseCase
+    val createShortUrlUseCase: CreateShortUrlUseCase,
+    val infoClientUserCase: InfoClientUserCase
 ) : UrlShortenerController {
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
         redirectUseCase.redirectTo(id).let {
-            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
+            val requestBrowser = logClickUseCase.getBrowser(request)
+            val requestPlataform = logClickUseCase.getPlataform(request)
+            println(requestPlataform)
+            println(requestBrowser)
+            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, browser = requestBrowser,
+                    platform = requestPlataform))
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
@@ -100,6 +114,14 @@ class UrlShortenerControllerImpl(
             )
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
+
+    @GetMapping("/api/link/{id}")
+    override fun infoner(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> {
+        infoClientUserCase.getInfo(id)
+        println(id)
+        val h = HttpHeaders()
+        return ResponseEntity<Void>(h, HttpStatus.OK)
+    }
 }
 
 @Configuration

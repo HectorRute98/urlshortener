@@ -21,7 +21,7 @@ interface CreateShortUrlUseCase {
 class CreateShortUrlUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
     private val validatorService: ValidatorService,
-    private val hashService: HashService
+    private val hashService: HashService,
 ) : CreateShortUrlUseCase {
 
     @Autowired
@@ -42,8 +42,10 @@ class CreateShortUrlUseCaseImpl(
                         validation = ValidateUrlState.VALIDATION_IN_PROGRESS
                 )
                 shortUrlRepository.save(su)
+
                 /*** Comprobamos la validacion de la URL ***/
                 if (validateResponse == ValidateUrlResponse.OK) {
+                    println("OK")
                     if(shortUrlRepository.updateValidate(su.hash, ValidateUrlState.VALIDATION_ACEPT)){
                         su = shortUrlRepository.findByKey(su.hash)!!
                     } else {
@@ -51,7 +53,16 @@ class CreateShortUrlUseCaseImpl(
                     }
                 }
                 if (validateResponse == ValidateUrlResponse.NO_REACHABLE){
+                    println("NO_REACHABLE")
                     shortUrlRepository.deleteByKey(su.hash)
+                }
+                if (validateResponse == ValidateUrlResponse.UNSAFE){
+                    println("UNSAFE")
+                    //shortUrlRepository.deleteByKey(su.hash)
+                }
+                if (validateResponse == ValidateUrlResponse.BLOCK){
+                    println("Block")
+                    //shortUrlRepository.deleteByKey(su.hash)
                 }
                 println(su)
                 su
