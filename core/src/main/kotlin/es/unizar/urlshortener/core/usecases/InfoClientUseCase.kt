@@ -1,9 +1,8 @@
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.ClickRepositoryService
-import es.unizar.urlshortener.core.Redirection
-import es.unizar.urlshortener.core.RedirectionNotFound
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle;
 
 /**
  * Given a key returns a [Redirection] that contains a [URI target][Redirection.target]
@@ -12,22 +11,25 @@ import es.unizar.urlshortener.core.ShortUrlRepositoryService
  * **Note**: This is an example of functionality.
  */
 interface InfoClientUserCase {
-    fun getInfo(key: String): String
+    fun getInfo(key: String): ArrayList<InfoClientResponse>?
 }
 
 /**
- * Implementation of [RedirectUseCase].
+ * Implementation of [InfoClientUserCase].
  */
 class InfoClientUserCaseImpl(
         private val clickRepository: ClickRepositoryService
 ) : InfoClientUserCase {
-    override fun getInfo(key: String): String {
+    override fun getInfo(key: String): ArrayList<InfoClientResponse>? {
         if(clickRepository.existHash(key)){
-            clickRepository.findByHash(key)
-            println(clickRepository.findByHash(key))
-            return "XD"
+            var list = ArrayList<InfoClientResponse>()
+            val fmt: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+            for(e in clickRepository.findByHash(key)){
+                list.add(InfoClientResponse(fmt.format(e.created), e.properties.browser, e.properties.platform))
+            }
+            return list
         } else {
-            return "No se ha hecho ningun click"
+            return null
         }
     }
 }

@@ -22,6 +22,22 @@ enum class ValidateUrlState {
 }
 
 /**
+ * Clase para representar los valores de [InfoClientUseCase].
+ */
+class InfoClientResponse(date: String, browser: String?, platform: String?) {
+
+    var date: String
+    var browser: String?
+    var platform: String?
+
+    init {
+        this.date = date
+        this.browser = browser
+        this.platform = platform
+    }
+}
+
+/**
  * A [Click] captures a request of redirection of a [ShortUrl] identified by its [hash].
  */
 data class Click(

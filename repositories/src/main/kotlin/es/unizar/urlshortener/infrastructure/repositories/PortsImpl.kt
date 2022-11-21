@@ -14,7 +14,7 @@ class ClickRepositoryServiceImpl(
 ) : ClickRepositoryService {
     override fun save(cl: Click): Click = clickEntityRepository.save(cl.toEntity()).toDomain()
 
-    override fun findByHash(id: String): List<Click> = clickEntityRepository.findAllByHash(id).forEach()
+    override fun findByHash(id: String): List<Click> = clickEntityRepository.findAllByHash(id).map { it.toDomain() }
 
     override fun existHash(id: String): Boolean = clickEntityRepository.existsByHash(id)
 }

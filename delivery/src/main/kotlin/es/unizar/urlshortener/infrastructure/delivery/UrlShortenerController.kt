@@ -1,6 +1,7 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.ClickProperties
+import es.unizar.urlshortener.core.InfoClientResponse
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.InfoClientUserCase
@@ -14,13 +15,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.servlet.ModelAndView
 import java.net.URI
 import javax.servlet.http.HttpServletRequest
+
 
 /**
  * The specification of the controller.
@@ -46,8 +46,7 @@ interface UrlShortenerController {
      *
      * **Note**:
      */
-    fun infoner(id: String, request: HttpServletRequest): ResponseEntity<Void>
-
+    fun infoner(id: String, request: HttpServletRequest): ArrayList<InfoClientResponse>?
 }
 
 /**
@@ -85,8 +84,6 @@ class UrlShortenerControllerImpl(
         redirectUseCase.redirectTo(id).let {
             val requestBrowser = logClickUseCase.getBrowser(request)
             val requestPlataform = logClickUseCase.getPlataform(request)
-            println(requestPlataform)
-            println(requestBrowser)
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, browser = requestBrowser,
                     platform = requestPlataform))
             val h = HttpHeaders()
@@ -116,12 +113,10 @@ class UrlShortenerControllerImpl(
         }
 
     @GetMapping("/api/link/{id}")
-    override fun infoner(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> {
-        infoClientUserCase.getInfo(id)
-        println(id)
-        val h = HttpHeaders()
-        return ResponseEntity<Void>(h, HttpStatus.OK)
+    override fun infoner(@PathVariable id: String, request: HttpServletRequest): ArrayList<InfoClientResponse>? {
+        return infoClientUserCase.getInfo(id)
     }
+
 }
 
 @Configuration
