@@ -1,8 +1,6 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.InfoClientResponse
-import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.InfoClientUserCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
@@ -17,7 +15,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.servlet.ModelAndView
 import java.net.URI
 import javax.servlet.http.HttpServletRequest
 
@@ -61,8 +58,8 @@ data class ShortUrlDataIn(
  * Data returned after the creation of a short url.
  */
 data class ShortUrlDataOut(
-    val url: URI? = null,
-    val properties: Map<String, Any> = emptyMap()
+        val url: URI? = null,
+        var properties: Map<String, Any> = emptyMap()
 )
 
 
@@ -82,10 +79,11 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
         redirectUseCase.redirectTo(id).let {
+            if (it.mode == 403) throw RedirectionNotSafe(id)
             val requestBrowser = logClickUseCase.getBrowser(request)
-            val requestPlataform = logClickUseCase.getPlataform(request)
+            val requestPlatform = logClickUseCase.getPlataform(request)
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, browser = requestBrowser,
-                    platform = requestPlataform))
+                    platform = requestPlatform))
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
@@ -109,7 +107,12 @@ class UrlShortenerControllerImpl(
                     "safe" to it.properties.safe
                 )
             )
-            ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
+            // Comprobacion de que no es segura
+            if(it.properties.safe){
+                ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
+            } else {
+                ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.BAD_REQUEST)
+            }
         }
 
     @GetMapping("/api/link/{id}")

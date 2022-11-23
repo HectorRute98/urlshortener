@@ -50,11 +50,11 @@ data class Click(
  * A [ShortUrl] is the mapping between a remote url identified by [redirection] and a local short url identified by [hash].
  */
 data class ShortUrl(
-    val hash: String,
-    val redirection: Redirection,
-    val created: OffsetDateTime = OffsetDateTime.now(),
-    val properties: ShortUrlProperties = ShortUrlProperties(),
-    val validation: ValidateUrlState = ValidateUrlState.VALIDATION_NOT_DONE
+        val hash: String,
+        val redirection: Redirection,
+        val created: OffsetDateTime = OffsetDateTime.now(),
+        val properties: ShortUrlProperties = ShortUrlProperties(),
+        var validation: ValidateUrlState = ValidateUrlState.VALIDATION_NOT_DONE
 )
 
 /**
@@ -62,19 +62,19 @@ data class ShortUrl(
  * By default, the [status code][mode] is 307 TEMPORARY REDIRECT.
  */
 data class Redirection(
-    val target: String,
-    val mode: Int = 307
+        val target: String,
+        var mode: Int = 307
 )
 
 /**
  * A [ShortUrlProperties] is the bag of properties that a [ShortUrl] may have.
  */
 data class ShortUrlProperties(
-    val ip: String? = null,
-    val sponsor: String? = null,
-    val safe: Boolean = true,
-    val owner: String? = null,
-    val country: String? = null
+        val ip: String? = null,
+        val sponsor: String? = null,
+        var safe: Boolean = true,
+        val owner: String? = null,
+        val country: String? = null
 )
 
 /**

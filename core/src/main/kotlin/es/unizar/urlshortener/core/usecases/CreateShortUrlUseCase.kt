@@ -3,6 +3,7 @@ package es.unizar.urlshortener.core.usecases
 import es.unizar.urlshortener.core.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.apache.el.parser.AstFalse
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
@@ -58,7 +59,10 @@ class CreateShortUrlUseCaseImpl(
                 }
                 if (validateResponse == ValidateUrlResponse.UNSAFE){
                     println("UNSAFE")
-                    //shortUrlRepository.deleteByKey(su.hash)
+                    su.validation = ValidateUrlState.VALIDATION_FAIL_NOT_SAFE
+                    su.properties.safe = false
+                    su.redirection.mode = 403
+                    shortUrlRepository.save(su)
                 }
                 if (validateResponse == ValidateUrlResponse.BLOCK){
                     println("Block")
