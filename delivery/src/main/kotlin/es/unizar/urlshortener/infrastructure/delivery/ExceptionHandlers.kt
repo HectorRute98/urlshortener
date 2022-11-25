@@ -30,14 +30,19 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     protected fun updateValidationNoWork(ex: UpdateValidationNoWork) = ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
 
     @ResponseBody
-    @ExceptionHandler(value = [RedirectionNotSafe::class])
+    @ExceptionHandler(value = [RedirectionNotSafeOrBlock::class])
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    protected fun redirectionNotSafe(ex: RedirectionNotSafe) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
+    protected fun redirectionNotSafe(ex: RedirectionNotSafeOrBlock) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
 
     @ResponseBody
     @ExceptionHandler(value = [ShortUrlNotSafe::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun shortUrlNotSafe(ex: ShortUrlNotSafe) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+
+    @ResponseBody
+    @ExceptionHandler(value = [RedirectionNotReachable::class])
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    protected fun redirectionNotReachable(ex: RedirectionNotReachable) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
 }
 
 data class ErrorMessage(

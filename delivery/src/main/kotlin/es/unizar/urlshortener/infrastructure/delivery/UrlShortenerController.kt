@@ -79,7 +79,8 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
         redirectUseCase.redirectTo(id).let {
-            if (it.mode == 403) throw RedirectionNotSafe(id)
+            if (it.mode == 403) throw RedirectionNotSafeOrBlock(id)
+            if (it.mode == 400) throw RedirectionNotReachable(id)
             val requestBrowser = logClickUseCase.getBrowser(request)
             val requestPlatform = logClickUseCase.getPlataform(request)
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, browser = requestBrowser,
@@ -101,18 +102,28 @@ class UrlShortenerControllerImpl(
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
+            var errores = ""
+            var state = HttpStatus.CREATED
+            if (it.validation == ValidateUrlState.VALIDATION_FAIL_NOT_SAFE) {
+                errores = "URI de destino no es segura"
+                state = HttpStatus.BAD_REQUEST
+            }
+            if (it.validation == ValidateUrlState.VALIDATION_FAIL_NOT_REACHABLE) {
+                errores = "URI de destino no es alcanzable"
+                state = HttpStatus.BAD_REQUEST
+            }
+            if (it.validation == ValidateUrlState.VALIDATION_FAIL_BLOCK) {
+                errores = "URI de destino esta bloqueada"
+                state = HttpStatus.FORBIDDEN
+            }
             val response = ShortUrlDataOut(
                 url = url,
                 properties = mapOf(
-                    "safe" to it.properties.safe
+                    "safe" to it.properties.safe,
+                    "error" to errores
                 )
             )
-            // Comprobacion de que no es segura
-            if(it.properties.safe){
-                ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
-            } else {
-                ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.BAD_REQUEST)
-            }
+            ResponseEntity<ShortUrlDataOut>(response, h, state)
         }
 
     @GetMapping("/api/link/{id}")

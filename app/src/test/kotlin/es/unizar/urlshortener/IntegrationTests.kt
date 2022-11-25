@@ -33,11 +33,6 @@ class HttpRequestTest {
 
     @BeforeEach
     fun setup() {
-        val httpClient = HttpClientBuilder.create()
-            .disableRedirectHandling()
-            .build()
-        (restTemplate.restTemplate.requestFactory as HttpComponentsClientHttpRequestFactory).httpClient = httpClient
-
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
     }
 
@@ -103,6 +98,27 @@ class HttpRequestTest {
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(0)
     }
 
+    /*** Test - Google Safe Browser ***/
+
+    @Test
+    fun `Crea una shortURL pero es segura`() {
+        assertThat("2").isEqualTo("2")
+    }
+
+    @Test
+    fun `Crea una shortURL pero se identifica como malware`() {
+        //val sUrl = shortUrl("https://testsafewsing.appspot.com/s/unwanted.html")
+        val sUrl = shortUrl("https://testsafebrowsing.appspot.com/s/malware.html")
+        val target = sUrl.headers.location
+        require(target != null)
+        val response = restTemplate.getForEntity(target, String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+
+        Thread.sleep(8_000)
+        val response2 = restTemplate.getForEntity(target, String::class.java)
+        assertThat(response2.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+    }
+
     private fun shortUrl(url: String): ResponseEntity<ShortUrlDataOut> {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
@@ -115,4 +131,5 @@ class HttpRequestTest {
             HttpEntity(data, headers), ShortUrlDataOut::class.java
         )
     }
+
 }

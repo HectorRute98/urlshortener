@@ -55,7 +55,9 @@ class CreateShortUrlUseCaseImpl(
                 }
                 if (validateResponse == ValidateUrlResponse.NO_REACHABLE){
                     println("NO_REACHABLE")
-                    shortUrlRepository.deleteByKey(su.hash)
+                    su.validation = ValidateUrlState.VALIDATION_FAIL_NOT_REACHABLE
+                    su.redirection.mode = 400
+                    shortUrlRepository.save(su)
                 }
                 if (validateResponse == ValidateUrlResponse.UNSAFE){
                     println("UNSAFE")
@@ -65,8 +67,10 @@ class CreateShortUrlUseCaseImpl(
                     shortUrlRepository.save(su)
                 }
                 if (validateResponse == ValidateUrlResponse.BLOCK){
-                    println("Block")
-                    //shortUrlRepository.deleteByKey(su.hash)
+                    println("BLOCK")
+                    su.validation = ValidateUrlState.VALIDATION_FAIL_BLOCK
+                    su.redirection.mode = 403
+                    shortUrlRepository.save(su)
                 }
                 println(su)
                 su
