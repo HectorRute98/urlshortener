@@ -1,5 +1,6 @@
 package es.unizar.urlshortener
 
+import es.unizar.urlshortener.core.ValidateUrlResponse
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
 import org.apache.http.impl.client.HttpClientBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -17,7 +18,11 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.jdbc.JdbcTestUtils
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import java.io.File
+import java.io.IOException
 import java.net.URI
+import java.nio.file.Paths
+import java.util.*
 
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -98,12 +103,7 @@ class HttpRequestTest {
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(0)
     }
 
-    /*** Test - Google Safe Browser ***/
-
-    @Test
-    fun `Crea una shortURL pero es segura`() {
-        assertThat("2").isEqualTo("2")
-    }
+    /*** TEST - NUEVAS FUNCIONALIDADES ***/
 
     @Test
     fun `Test para comprobar la funcionalidad de Google Safe Browsing`() {
@@ -131,7 +131,7 @@ class HttpRequestTest {
         val hash = target.toString().split("/")[3]
         // GET /api/link
         val response1 = restTemplate.getForEntity("http://localhost:$port/api/link/"+hash, String::class.java)
-        assertThat(response1.statusCode).isEqualTo(HttpStatus.OK) //Comp. de 200 OK
+        assertThat(response1.statusCode).isEqualTo(HttpStatus.OK)   //Comp. de 200 OK
         assertThat(response1.body?.contains("TEST NAVEGADOR")).isEqualTo(true)  //Comp. que devuelve Navegador
         assertThat(response1.body?.contains("TEST PLATAFORMA")).isEqualTo(true) //Comp. que devuelve Plataforma
         println("FINAL")
@@ -143,7 +143,7 @@ class HttpRequestTest {
         val target = respHeaders.headers.location
         require(target != null)
         // POST /api/link
-        assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
+        assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)    //Comp. de 400 BAD_REQUEST
         assertThat(respHeaders.body?.properties?.get("error")).isEqualTo("URI de destino no es alcanzable") //Comp. del mensaje de error
         // GET /{id}
         val response = restTemplate.getForEntity(target, String::class.java)
@@ -153,17 +153,24 @@ class HttpRequestTest {
 
     @Test
     fun `Test para comprobar la funcionalidad de que una URL esta bloqueada`() {
-        val respHeaders = shortUrl("https://www.twitch.tv/")
+        //val path = Paths.get("..\\repositories\\src\\main\\resources\\BLOCK_URL.txt") // URL Bloqueada
+        var line = "https://www.amazon.es/"
+        /*try {
+            val sc = Scanner(File(path.toString()))
+            line = sc.nextLine()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }*/
+        val respHeaders = shortUrl("https://www.amazon.es/")
         val target = respHeaders.headers.location
         require(target != null)
         // POST /api/link
-        //assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
-        //assertThat(respHeaders.body?.properties?.get("error")).isEqualTo("URI de destino no es alcanzable") //Comp. del mensaje de error
+        //assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.FORBIDDEN) //Comp. de 403 FORBIDDEN
         // GET /{id}
         //val response = restTemplate.getForEntity(target, String::class.java)
-        //assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
-        //assertThat(response.body?.contains("redirection block")).isEqualTo(true) //Comp. del mensaje de error
+        //assertThat(response.statusCode).isEqualTo(HttpStatus.FORBIDDEN) //Comp. de 403 FORBIDDEN
     }
+
 
     private fun shortUrl(url: String): ResponseEntity<ShortUrlDataOut> {
         val headers = HttpHeaders()

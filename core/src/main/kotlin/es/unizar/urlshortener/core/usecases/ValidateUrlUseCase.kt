@@ -102,6 +102,7 @@ class ValidateUrlUseCaseImpl(
             val sc = Scanner(File(path.toString()))
             while (sc.hasNextLine()) {
                 val line = sc.nextLine()
+                println(url + ", " + line)
                 if(line.equals(url)){
                     return ValidateUrlResponse.BLOCK
                 }
