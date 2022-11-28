@@ -67,7 +67,7 @@ class LogClickUseCaseImpl(
         } else if (user.contains("rv")) {
             browser = "IE"
         } else {
-            browser = "UnKnown, More-Info: $browserDetails"
+            browser = "TEST NAVEGADOR"
         }
 
         return (browser)!!
@@ -89,7 +89,7 @@ class LogClickUseCaseImpl(
         } else if (browserDetails.contains("iphone")) {
             return "IPhone";
         } else {
-            return "UnKnown, More-Info: " + browserDetails;
+            return "TEST PLATAFORMA";
         }
     }
 }

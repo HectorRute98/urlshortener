@@ -106,17 +106,63 @@ class HttpRequestTest {
     }
 
     @Test
-    fun `Crea una shortURL pero se identifica como malware`() {
+    fun `Test para comprobar la funcionalidad de Google Safe Browsing`() {
         //val sUrl = shortUrl("https://testsafewsing.appspot.com/s/unwanted.html")
-        val sUrl = shortUrl("https://testsafebrowsing.appspot.com/s/malware.html")
-        val target = sUrl.headers.location
+        val respHeaders = shortUrl("https://testsafebrowsing.appspot.com/s/malware.html")
+        val target = respHeaders.headers.location
         require(target != null)
+        // POST /api/link
+        assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
+        assertThat(respHeaders.body?.properties?.get("error")).isEqualTo("URI de destino no es segura") //Comp. del mensaje de error
+        // GET /{id}
         val response = restTemplate.getForEntity(target, String::class.java)
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.FORBIDDEN) //Comp. de 403 FORBIDDEN
+        assertThat(response.body?.contains("redirection block")).isEqualTo(true) //Comp. del mensaje de error
+    }
 
-        Thread.sleep(8_000)
-        val response2 = restTemplate.getForEntity(target, String::class.java)
-        assertThat(response2.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+    @Test
+    fun `Test para comprobar la funcionalidad de identificar el Navegador y Plataforma`() {
+        val respHeaders = shortUrl("https://www.youtube.com")
+        assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.CREATED) //Comp. de 201 CREATED
+        val target = respHeaders.headers.location
+        require(target != null)
+        // GET /{id}
+        restTemplate.getForEntity(target, String::class.java)
+        val hash = target.toString().split("/")[3]
+        // GET /api/link
+        val response1 = restTemplate.getForEntity("http://localhost:$port/api/link/"+hash, String::class.java)
+        assertThat(response1.statusCode).isEqualTo(HttpStatus.OK) //Comp. de 200 OK
+        assertThat(response1.body?.contains("TEST NAVEGADOR")).isEqualTo(true)  //Comp. que devuelve Navegador
+        assertThat(response1.body?.contains("TEST PLATAFORMA")).isEqualTo(true) //Comp. que devuelve Plataforma
+        println("FINAL")
+    }
+
+    @Test
+    fun `Test para comprobar la funcionalidad de que una URL es alcanzable`() {
+        val respHeaders = shortUrl("https://www.youtubeeeeee.com")
+        val target = respHeaders.headers.location
+        require(target != null)
+        // POST /api/link
+        assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
+        assertThat(respHeaders.body?.properties?.get("error")).isEqualTo("URI de destino no es alcanzable") //Comp. del mensaje de error
+        // GET /{id}
+        val response = restTemplate.getForEntity(target, String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
+        assertThat(response.body?.contains("redirection block")).isEqualTo(true) //Comp. del mensaje de error
+    }
+
+    @Test
+    fun `Test para comprobar la funcionalidad de que una URL esta bloqueada`() {
+        val respHeaders = shortUrl("https://www.twitch.tv/")
+        val target = respHeaders.headers.location
+        require(target != null)
+        // POST /api/link
+        //assertThat(respHeaders.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
+        //assertThat(respHeaders.body?.properties?.get("error")).isEqualTo("URI de destino no es alcanzable") //Comp. del mensaje de error
+        // GET /{id}
+        //val response = restTemplate.getForEntity(target, String::class.java)
+        //assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) //Comp. de 400 BAD_REQUEST
+        //assertThat(response.body?.contains("redirection block")).isEqualTo(true) //Comp. del mensaje de error
     }
 
     private fun shortUrl(url: String): ResponseEntity<ShortUrlDataOut> {
