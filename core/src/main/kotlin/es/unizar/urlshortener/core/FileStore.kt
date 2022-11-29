@@ -28,6 +28,6 @@ class FileStorageImpl: FileStore {
     }
 
     override fun deleteAll() {
-        FileSystemUtils.deleteRecursively(rootLocation.toFile())
+        FileSystemUtils.deleteRecursively(rootLocation.toFile()) 
     }
 }
