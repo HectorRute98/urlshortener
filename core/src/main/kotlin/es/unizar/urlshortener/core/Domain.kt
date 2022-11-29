@@ -87,3 +87,11 @@ data class ClickProperties(
     val platform: String? = null,
     val country: String? = null
 )
+
+/**
+ * A [ShortUrlFile] is a data that represents a list of short urls in a file.
+ */
+data class ShortUrlFile(
+        val filename: String = "",
+        val urls: List<ShortUrl> = ArrayList()
+)

@@ -43,6 +43,11 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [RedirectionNotReachable::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun redirectionNotReachable(ex: RedirectionNotReachable) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+
+    @ResponseBody
+    @ExceptionHandler(value = [InvalidFileType::class])
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    protected fun redirectionNotReachable(ex: InvalidFileType) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
 }
 
 data class ErrorMessage(

@@ -78,6 +78,7 @@ project(":delivery") {
         "implementation"("com.fasterxml.jackson.module:jackson-module-kotlin")
         "implementation"("commons-validator:commons-validator:$commonsValidatorVersion")
         "implementation"("com.google.guava:guava:$guavaVersion")
+        "implementation"("org.springframework.boot:spring-boot-starter-thymeleaf:2.5.3")
 
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.mockito.kotlin:mockito-kotlin:$mockitoVersion")
