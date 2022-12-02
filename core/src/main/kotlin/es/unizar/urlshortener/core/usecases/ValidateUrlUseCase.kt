@@ -98,8 +98,10 @@ class ValidateUrlUseCaseImpl(
     /*** Comprobar que la URL no esta en la lista de bloqueados ***/
     override fun BlockURL(url: String): ValidateUrlResponse {
         val path = Paths.get("repositories/src/main/resources/BLOCK_URL.txt")
+        //val path = ValidateUrlUseCase::class.java.getResourceAsStream("BLOCK_URL.txt")
+        println(path)
         try {
-            val sc = Scanner(File(path.toString()))
+            val sc = Scanner(path)
             while (sc.hasNextLine()) {
                 val line = sc.nextLine()
                 if(line.equals(url)){
